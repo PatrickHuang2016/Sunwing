@@ -1,0 +1,682 @@
+﻿
+<script src="~/Scripts/jquery-1.10.2.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6">
+            <h2>Contact Manager</h2>
+        </div>
+    </div>
+</div>
+
+<input type="radio" name="person" id="customerR"  onclick="showCustomer()" checked/>Customer<br>
+<input type="radio" name="person" id="supplierR" onclick="showSupplier()" />Supplier<br>
+<div id="customerlist" class="row" style="display:block">
+    <div class="col-sm-6">
+        <table id="customerTable"
+               class="table table-bordered
+                 table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>BirthDay</th>
+                    <th>Email</th>
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+        </table>
+    </div>    
+</div>
+<div class="row" id="custAdd">
+    <div class="col-sm-6">
+        <button type="button" id="addButton" style="display:none"
+                class="btn btn-primary"
+                onclick="addClick();">
+            Add
+        </button>
+    </div>
+</div>
+<div id="supplierlist" class="row" style="display:none" >
+    <div class="col-sm-6">
+        <table id="supplierTable"
+               class="table table-bordered
+                 table-condensed table-striped">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Telephone</th>                   
+                    <th>Edit</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <br />   
+</div>
+<div class="row" id="supAdd">
+    <div class="col-sm-6">
+        <button type="button" id="addButton1" style="display:none"
+                class="btn btn-primary"
+                onclick="addClick1();">
+            Add
+        </button>
+    </div>
+</div>
+
+
+
+    <div id="customerAdd" class="row">
+        <div class="col-sm-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    Customer Information
+                </div>
+                <div class="panel-body">
+                    <input type="hidden" id="customerid" value="0" />
+                    <input type="hidden" id="nameid" value="0" />
+                    <div class="form-group">
+                        <label for="firstname">First Name</label>
+                        <input type="text" id="firstname"
+                               class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="lastnamename">Last Name</label>
+                        <input type="text" id="lastname"
+                               class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="birth">
+                            Birth Day
+                        </label>
+                        <input type="date" id="birth"
+                               class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="url" id="email"
+                               class="form-control" />
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button type="button" id="updateButton"
+                                    class="btn btn-primary"
+                                    onclick="updateClick();">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="supplierAdd" class="row" style="display:none">
+        <div class="col-sm-6">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    Supplier Information
+                </div>
+                <div class="panel-body">
+                    <input type="hidden" id="supplierid" value="0" />
+                    <input type="hidden" id="nameid" value="0" />
+                    <div class="form-group">
+                        <label for="firstname1">First Name</label>
+                        <input type="text" id="firstname1"
+                               class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="lastname1">Last Name</label>
+                        <input type="text" id="lastname1"
+                               class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="telephone">Telephone</label>
+                        <input type="url" id="telephone"
+                               class="form-control" />
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <button type="button" id="updateButton1"
+                                    class="btn btn-primary"
+                                    onclick="update1Click();">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+
+
+        var NameId;
+
+        function customerList() {
+            // Call Web API to get a list of Customer
+            $.ajax({
+                url: '/api/Customers/',
+                type: 'GET',
+                dataType: 'json',
+                success: function (customers) {
+                    customerListSuccess(customers);
+                },
+                error: function (request, message, error) {
+                    handleException(request, message, error);
+                }
+            });
+        }
+
+        function supplierList() {
+            // Call Web API to get a list of Customer
+            $.ajax({
+                url: '/api/Suppliers/',
+                type: 'GET',
+                dataType: 'json',
+                success: function (suppliers) {
+                    supplierListSuccess(suppliers);
+                },
+                error: function (request, message, error) {
+                    handleException1(request, message, error);
+                }
+            });
+        }
+
+        function customerListSuccess(customers) {
+            // Iterate over the collection of data
+            $.each(customers, function (index, customer) {
+                // Add a row to the Customer table
+                customerAddRow(customer);
+            });
+        }
+
+        function supplierListSuccess(suppliers) {
+            // Iterate over the collection of data
+            $.each(suppliers, function (index, supplier) {
+                // Add a row to the Customer table
+                supplierAddRow(supplier);
+            });
+        }
+
+
+        function customerAddRow(customer) {
+            // Check if <tbody> tag exists, add one if not
+            if ($("#customerTable tbody").length == 0) {
+                $("#customerTable").append("<tbody></tbody>");
+            }
+            // Append row to <table>
+            $("#customerTable tbody").append(
+              customerBuildTableRow(customer));
+        }
+        function supplierAddRow(supplier) {
+            // Check if <tbody> tag exists, add one if not
+            if ($("#supplierTable tbody").length == 0) {
+                $("#supplierTable").append("<tbody></tbody>");
+            }
+            // Append row to <table>
+            $("#supplierTable tbody").append(
+              supplierBuildTableRow(supplier));
+        }
+
+        function customerBuildTableRow(customer) {
+            var ret =
+              "<tr>" +
+               "<td>" + customer.FullName + "</td>" +
+               "<td>" + customer.BirthDay + "</td>"
+                + "<td>" + customer.Email + "</td>" +
+                "<td>" +
+                "<button type='button' " +
+                   "onclick='customerGet(this);' " +
+                   "class='btn btn-default' " +
+                   "data-id='" + customer.Id + "'>" +
+                   "<span class='glyphicon glyphicon-edit' />"
+                 + "</button>" +
+              "</td >" +
+              "<td>" +
+                "<button type='button' " +
+                   "onclick='customerDelete(this);' " +
+                   "class='btn btn-default' " +
+                   "data-id='" + customer.Id + "'>" +
+                   "<span class='glyphicon glyphicon-remove' />" +
+                "</button>" +
+              "</td>" +
+              "</tr>";
+            return ret;
+        }
+        function supplierBuildTableRow(supplier) {
+            var ret =
+              "<tr>" +
+               "<td>" + supplier.FullName + "</td>" +
+               "<td>" + supplier.Telephone + "</td>" +
+                "<td>" +
+                "<button type='button' " +
+                   "onclick='supplierGet(this);' " +
+                   "class='btn btn-default' " +
+                   "data-id='" + supplier.Id + "'>" +
+                   "<span class='glyphicon glyphicon-edit' />"
+                 + "</button>" +
+              "</td >" +
+              "<td>" +
+                "<button type='button' " +
+                   "onclick='supplierDelete(this);' " +
+                   "class='btn btn-default' " +
+                   "data-id='" + supplier.Id + "'>" +
+                   "<span class='glyphicon glyphicon-remove' />" +
+                "</button>" +
+              "</td>" +
+              "</tr>";
+            return ret;
+        }
+
+        function customerGet(ctl) {
+            // Get customer id from data- attribute
+            var id = $(ctl).data("id");
+            $("#addButton").css("display", "block");
+            // Store customer id in hidden field
+            $("#customerid").val(id);
+
+            // Call Web API to get a list of customers
+            $.ajax({
+                url: "/api/Customers/" + id,
+                type: 'GET',
+                dataType: 'json',
+                success: function (customer) {
+                    customerToFields(customer, id);
+
+                    // Change Update Button Text
+                    $("#updateButton").text("Update");
+                },
+                error: function (request, message, error) {
+                    handleException(request, message, error);
+                }
+            });
+        }
+        function supplierGet(ctl) {
+            // Get customer id from data- attribute
+            var id = $(ctl).data("id");
+            $("#addButton1").css("display", "block");
+            // Store customer id in hidden field
+            $("#supplierid").val(id);
+
+            // Call Web API to get a list of customers
+            $.ajax({
+                url: "/api/Suppliers/" + id,
+                type: 'GET',
+                dataType: 'json',
+                success: function (supplier) {
+                    supplierToFields(supplier, id);
+
+                    // Change Update Button Text
+                    $("#updateButton1").text("Update");
+                },
+                error: function (request, message, error) {
+                    handleException1(request, message, error);
+                }
+            });
+        }
+
+        function customerToFields(customerstring, id) {
+            debugger;
+
+            NameId = customerstring.Name_Id;
+            var customer = JSON.parse(customerstring);
+            $("#customerid").val(id)
+            $("#firstname").val(customer.name.First);
+            $("#lastname").val(customer.name.Last);
+
+            var date = new Date(Date.parse(customer.BirthDay));
+            //var birth = Date.parse(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate());
+            //alert(date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate());
+            var d = date.getFullYear() + '-' + (((date.getMonth() + 1) < 10) ? ('0' + (date.getMonth() + 1)) : (date.getMonth() + 1)) + '-' + ((date.getDate() < 10) ? ('0' + date.getDate()) : date.getDate());
+
+            $("#birth").val(d);
+            $("#email").val(customer.Email);
+            $("#nameid").val(customer.Name_Id);
+        }
+        function supplierToFields(supplierstring, id) {
+            debugger;
+
+            NameId = supplierstring.Name_Id;
+            var supplier = JSON.parse(supplierstring);
+            $("#supplierid").val(id)
+            $("#firstname1").val(supplier.name.First);
+            $("#lastname1").val(supplier.name.Last);
+            $("#telephone").val(supplier.Telephone);
+            $("#nameid").val(supplier.Name_Id);
+        }
+        // Handle click event on Update button
+        function updateClick() {
+            debugger;
+            // Build customer object from inputs
+
+
+            var id = $("#customerid").val();
+            var first = $("#firstname").val();
+            var last = $("#lastname").val();
+            var nameid = $("#nameid").val();
+            var BirthDay =
+                 $("#birth").val();
+            var Email = $("#email").val();
+
+            var customer = '{"BirthDay":"' + BirthDay + '","Email":"' + Email + '","Id":"' + id + '","Name_Id":' + nameid + ',"Name":{"Id":' + nameid + ',"First":"' + first + '","Last":"' + last + '"}}'
+            if ($("#updateButton").text().trim() == "Add") {
+
+                customerAdd(customer);
+            }
+            else {
+                customerUpdate(customer, id);
+            }
+        }
+        function update1Click() {
+            debugger;
+            // Build customer object from inputs
+
+
+            var id = $("#supplierid").val();
+            var first = $("#firstname1").val();
+            var last = $("#lastname1").val();
+            var nameid = $("#nameid").val();
+            var Telephone = $("#telephone").val();
+
+            var supplier = '{"Telephone":"' + Telephone + '","Id":"' + id + '","Name_Id":' + nameid + ',"Name":{"Id":' + nameid + ',"First":"' + first + '","Last":"' + last + '"}}'
+
+            if ($("#updateButton1").text().trim() == "Add") {
+
+                supplierAdd(supplier);
+            }
+            else {
+                supplierUpdate(supplier, id);
+            }
+        }
+
+        function customerAdd(customer) {
+            $.ajax({
+                url: "/api/Customers",
+                type: 'POST',
+                contentType:
+                   "application/json;charset=utf-8",
+                data: customer,
+                success: function (customer) {
+                    customerAddSuccess(customer);
+                },
+                error: function (request, message, error) {
+                    handleException(request, message, error);
+                }
+            });
+        }
+        function supplierAdd(supplier) {
+            $.ajax({
+                url: "/api/Suppliers",
+                type: 'POST',
+                contentType:
+                   "application/json;charset=utf-8",
+                data: supplier,
+                success: function (supplier) {
+                    supplierAddSuccess(supplier);
+                },
+                error: function (request, message, error) {
+                    handleException1(request, message, error);
+                }
+            });
+        }
+
+        function customerUpdate(customer, id) {
+            $.ajax({
+                url: "/api/Customers/" + id,
+                type: 'PUT',
+                contentType:
+                   "application/json;charset=utf-8",
+                data: customer,
+                success: function (customer) {
+                    debugger;
+                    customerUpdateSuccess(customer);
+                },
+                error: function (request, message, error) {
+                    handleException(request, message, error);
+                }
+            });
+        }
+        function supplierUpdate(supplier, id) {
+            $.ajax({
+                url: "/api/Suppliers/" + id,
+                type: 'PUT',
+                contentType:
+                   "application/json;charset=utf-8",
+                data: supplier,
+                success: function (supplier) {
+                    debugger;
+                    supplierUpdateSuccess(supplier);
+                },
+                error: function (request, message, error) {
+                    handleException1(request, message, error);
+                }
+            });
+        }
+
+        function customerAddSuccess(customer) {
+            customerAddRow(customer);
+            formClear();
+        }
+        function supplierAddSuccess(supplier) {
+            supplierAddRow(supplier);
+            formClear1();
+        }
+
+        function customerUpdateSuccess(customer) {
+            debugger;
+            $("#customerid").text = customer.Id;
+            // Find customer in <table>
+            var row = $("#customerTable button[data-id='" +
+               customer.Id + "']").parents("tr")[0];
+            // Add changed customer to table
+            $(row).after(customerBuildTableRow(customer));
+            // Remove original customer
+            $(row).remove();
+            formClear(); // Clear form fields
+            // Change Update Button Text
+            $("#updateButton").text("Add");
+        }
+
+        function supplierUpdateSuccess(supplier) {
+            debugger;
+            $("#customerid").text = supplier.Id;
+            // Find customer in <table>
+            var row = $("#supplierTable button[data-id='" +
+               supplier.Id + "']").parents("tr")[0];
+            // Add changed customer to table
+            $(row).after(supplierBuildTableRow(supplier));
+            // Remove original customer
+            $(row).remove();
+            formClear1(); // Clear form fields
+            // Change Update Button Text
+            $("#updateButton1").text("Add");
+        }
+
+        function formClear() {
+            $("#firstname").val("");
+            $("#lastname").val("");
+            $("#birth").val("");
+            $("#email").val("");
+        }
+
+        function formClear1() {
+            $("#firstname1").val("");
+            $("#lastname1").val("");
+            $("#telephone").val("");
+        }
+        function addClick() {
+            formClear();
+        }
+        function addClick1() {
+            formClear1();
+        }
+
+        function customerDelete(ctl) {
+            var id = $(ctl).data("id");
+
+            $.ajax({
+                url: "/api/Customers/" + id,
+                type: 'DELETE',
+                success: function (customer) {
+                    $(ctl).parents("tr").remove();
+                },
+                error: function (request, message, error) {
+                    handleException(request, message, error);
+                }
+            });
+        }
+
+        function supplierDelete(ctl) {
+            var id = $(ctl).data("id");
+
+            $.ajax({
+                url: "/api/Suppliers/" + id,
+                type: 'DELETE',
+                success: function (supplier) {
+                    $(ctl).parents("tr").remove();
+                },
+                error: function (request, message, error) {
+                    handleException1(request, message, error);
+                }
+            });
+        }
+
+        //function handleException(request, message,
+        //                     error) {
+        //    var msg = "";
+        //    msg += "Code: " + request.status + "\n";
+        //    msg += "Text: " + request.statusText + "\n";
+        //    if (request.responseJSON != null) {
+        //        msg += "Message" +
+        //            request.responseJSON.Message + "\n";
+        //    }
+        //    alert(msg);
+        //}
+
+        $(document).ready(function () {
+            showCustomer();
+            customerList();
+            supplierList();
+        });
+
+        function showCustomer() {
+            
+            $("#custAdd").css("display", "block");
+            $("#supAdd").css("display", "none");
+            $("#customerlist").css("display", "block");
+            $("#supplierlist").css("display", "none");
+            $("#supplierAdd").css("display", "none");
+            $("#customerAdd").css("display", "block");
+
+            //customerList();
+        }
+
+        function showSupplier() {
+
+            $("#custAdd").css("display", "none");
+            $("#supAdd").css("display", "block");
+            $("#customerlist").css("display", "none");
+            $("#supplierlist").css("display", "block");
+            $("#supplierAdd").css("display", "block");
+            $("#customerAdd").css("display", "none");
+            //supplierList();
+        }
+
+        function handleException(request, message, error) {
+            var msg = "";
+            msg += "Code: " + request.status + "\n";
+            msg += "Text: " + request.statusText + "\n";
+            if (request.responseJSON != null) {
+                msg += "Message: " +
+                       request.responseJSON.Message + "\n";
+                debugger;
+                if (request.responseJSON.ModelState["customer.Name.First"] != null) {
+                    msg +=
+                      request.responseJSON.ModelState["customer.Name.First"][0] + "\n";
+                }
+
+                if (request.responseJSON.ModelState["customer.Name.Last"] != null) {
+                    msg +=
+                      request.responseJSON.ModelState["customer.Name.Last"][0] + "\n";
+                }
+                if (request.responseJSON.ModelState["customer.Email"] != null) {
+                    msg +=
+                      request.responseJSON.ModelState["customer.Email"][0] + "\n";
+                }
+                if (request.responseJSON.ModelState["customer.BirthDay"] != null) {
+                    msg +=
+                       request.responseJSON.ModelState["customer.BirthDay"][0] + "\n";
+                }
+
+            }
+            alert(msg);
+        }
+
+        function handleException1(request, message, error) {
+            var msg = "";
+            msg += "Code: " + request.status + "\n";
+            msg += "Text: " + request.statusText + "\n";
+            if (request.responseJSON != null) {
+                msg += "Message: " +
+                       request.responseJSON.Message + "\n";
+                debugger;
+                if (request.responseJSON.ModelState["supplier.Name.First"] != null) {
+                    msg +=
+                      request.responseJSON.ModelState["supplier.Name.First"][0] + "\n";
+                }
+
+                if (request.responseJSON.ModelState["supplier.Name.Last"] != null) {
+                    msg +=
+                      request.responseJSON.ModelState["supplier.Name.Last"][0] + "\n";
+                }
+                if (request.responseJSON.ModelState["supplier.Telephone"] != null) {
+                    msg +=
+                      request.responseJSON.ModelState["supplier.Telephone"][0] + "\n";
+                }
+
+
+            }
+            alert(msg);
+        }
+
+        function addClick() {
+            $("#updateButton").text("Add");
+            $("#addButton").css("display", "none");
+        }
+        function addClick1() {
+            $("#updateButton1").text("Add");
+            $("#addButton1").css("display", "none");
+        }
+
+    </script>
+    @*<div class="jumbotron">
+            <h1>ASP.NET</h1>
+            <p class="lead">ASP.NET is a free web framework for building great Web sites and Web applications using HTML, CSS, and JavaScript.</p>
+            <p><a href="http://asp.net" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <h2>Getting started</h2>
+                <p>ASP.NET Web API is a framework that makes it easy to build HTTP services that reach
+                a broad range of clients, including browsers and mobile devices. ASP.NET Web API
+                is an ideal platform for building RESTful applications on the .NET Framework.</p>
+                <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301870">Learn more &raquo;</a></p>
+            </div>
+            <div class="col-md-4">
+                <h2>Get more libraries</h2>
+                <p>NuGet is a free Visual Studio extension that makes it easy to add, remove, and update libraries and tools in Visual Studio projects.</p>
+                <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301871">Learn more &raquo;</a></p>
+            </div>
+            <div class="col-md-4">
+                <h2>Web Hosting</h2>
+                <p>You can easily find a web hosting company that offers the right mix of features and price for your applications.</p>
+                <p><a class="btn btn-default" href="http://go.microsoft.com/fwlink/?LinkId=301872">Learn more &raquo;</a></p>
+            </div>
+        </div>*@
